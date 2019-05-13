@@ -243,7 +243,7 @@ __pthread_mutex_lock (pthread_mutex_t *mutex)
     mutex->__data.lock_acquisition_g_time = g_time_ms();
   mutex->__data.lock_acquisition_v_time = (double) syscall(333,(int)mutex->__data.__owner);
  	printf("\n\nowner:%d\tlock acquisition_v_time:%lf \tlock acquisition_g_time:%lf\n",(int)(mutex->__data.__owner), mutex->__data.lock_acquisition_v_time/10e8, mutex->__data.lock_acquisition_g_time);
- 
+//	printf("\nowner:%d\texac_start_gtime in micro sec:%lf\n",(int)(mutex->__data.__owner),(double) syscall(337,(int)mutex->__data.__owner)/1000); //division by 1000 to convert nano to micro
   LIBC_PROBE (mutex_acquired, 1, mutex);
  return 0;
 }

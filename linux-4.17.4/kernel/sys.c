@@ -2627,6 +2627,19 @@ SYSCALL_DEFINE1(del_exec, int, arg0)
   return t->se.del_exec ;
 }
 
+SYSCALL_DEFINE1(exec_start_gtime, int, arg0)
+{
+        struct pid *pid_struct;
+        struct task_struct *t;
+        pid_struct = find_get_pid(arg0);
+        t = pid_task(pid_struct,PIDTYPE_PID);
+      
+//  printk(KERN_INFO "add_vtime syscall called with %d \tdelta: %d\n",arg0,delta_v  );
+  return t->se.exec_start_gtime ;
+}
+
+
+
 
 
 #ifdef CONFIG_COMPAT

@@ -345,6 +345,7 @@
 334     common  add_vtime               __x64_sys_add_vtime
 335 	common  group_vtime		__x64_sys_group_vtime
 336	common  del_exec		__x64_sys_del_exec
+337	common  exec_start_gtime	__x64_sys_exec_start_gtime	
 #
 # x32-specific system call numbers start at 512 to avoid cache impact
 # for native 64-bit operation. The __x32_compat_sys stubs are created

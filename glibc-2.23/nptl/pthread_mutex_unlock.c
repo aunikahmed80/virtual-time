@@ -25,6 +25,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/time.h>
 #ifndef lll_unlock_elision
 #define lll_unlock_elision(a,b,c) ({ lll_unlock (a,c); 0; })
 #endif
@@ -35,6 +36,20 @@ __pthread_mutex_unlock_full (pthread_mutex_t *mutex, int decr)
      __attribute_noinline__;
 
 ///////////////////////////////////////////////////////////////// Added function//////////////////////////////////////////////////////////////////
+
+static double g_time_ms(void){
+        struct timeval g_time;
+        gettimeofday(&g_time , NULL);
+        double g_ms = (double)g_time.tv_sec*1000000 + (double)g_time.tv_usec;
+        return g_ms;
+}
+
+
+
+
+
+
+
 static void add_vtime(pthread_mutex_t *mutex){
        __v_t_list *temp = &mutex->__data.waiter_list;
 	double delta_v = 0;
@@ -47,7 +62,9 @@ static void add_vtime(pthread_mutex_t *mutex){
 			delta_v = (double)syscall(333,mutex->__data.__owner) - temp->next->lock_holder_v_time_at_request;
 			//printf("Request time is larger, delta_v: %lld\n",delta_v);
 		}
-		printf("*In Unloack*\tadding %lf to thread: %d\n",delta_v, temp->next->tid);
+		double elapsed_time_since_last_vtime_update =g_time_ms() - (double)syscall(337,mutex->__data.__owner)/1000; 
+		delta_v += elapsed_time_since_last_vtime_update;
+		printf("*In Unloack*\tadding %lf to thread: %d, elaspsed time since last vtime update %lf\n",delta_v, temp->next->tid,elapsed_time_since_last_vtime_update);
 		syscall(334,temp->next->tid,(long long int)delta_v); 
                 temp = temp->next;
         }

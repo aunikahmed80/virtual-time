@@ -451,6 +451,7 @@ struct sched_entity {
 	unsigned int			on_rq;
 
 	u64				exec_start;
+	u64				exec_start_gtime;
 	u64				sum_exec_runtime;
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;

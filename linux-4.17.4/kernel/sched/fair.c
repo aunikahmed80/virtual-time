@@ -23,7 +23,7 @@
 #include "sched.h"
 
 #include <trace/events/sched.h>
-
+#include <linux/time.h>
 /*
  * Targeted preemption latency for CPU-bound tasks:
  *
@@ -85,6 +85,16 @@ unsigned int sysctl_sched_wakeup_granularity		= 1000000UL;
 unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
 
 const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
+
+
+static u64 gtime(void){
+	struct timespec now;
+	getnstimeofday(&now);
+	u64 g_ns = now.tv_sec*1000000000 + now.tv_nsec;
+        return g_ns;	
+
+
+}
 
 #ifdef CONFIG_SMP
 /*
@@ -815,7 +825,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 		return;
 
 	curr->exec_start = now;
-
+	curr->exec_start_gtime = gtime();
 	schedstat_set(curr->statistics.exec_max,
 		      max(delta_exec, curr->statistics.exec_max));
 
@@ -1016,6 +1026,7 @@ update_stats_curr_start(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	/*
 	 * We are starting a new run period:
 	 */
+	se->exec_start_gtime = gtime(); 
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 }
 
