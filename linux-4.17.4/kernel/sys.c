@@ -2616,6 +2616,21 @@ SYSCALL_DEFINE2(add_vtime, int, arg0, long long int, delta_v)
   return t->se.on_cpu_time ;
 }
 
+
+SYSCALL_DEFINE2(set_vtime, int, arg0, long long int, v_time)
+{
+        struct pid *pid_struct;
+        struct task_struct *t;
+        pid_struct = find_get_pid(arg0);
+        t = pid_task(pid_struct,PIDTYPE_PID);
+         t->se.on_cpu_time = v_time;
+      
+//  printk(KERN_INFO "add_vtime syscall called with %d \tdelta: %d\n",arg0,delta_v  );
+  return t->se.on_cpu_time ;
+}
+
+
+
 SYSCALL_DEFINE1(del_exec, int, arg0)
 {
         struct pid *pid_struct;

@@ -43,7 +43,7 @@ void * thread_func(void * args){
         struct timeval before , after;
         double runtimedata[100];
         double time_sum = 0;
-        for(int n=0; n < 100; n++){
+        for(int n=0; n < 10000; n++){
                 gettimeofday(&before , NULL);
 
        		 dummy();
@@ -53,7 +53,7 @@ void * thread_func(void * args){
 
                 pthread_mutex_lock(&lock);
                 gettimeofday(&before , NULL);
-                for(int i =0; i< 100000000 ; i++){//5000
+                for(int i =0; i< 5000000 ; i++){//5000
                         for(int j = 1000000 ; j < 1; j++){ //10000
 				k = i*j;
 			}

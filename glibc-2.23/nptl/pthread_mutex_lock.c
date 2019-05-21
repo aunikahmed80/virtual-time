@@ -117,7 +117,7 @@ static void dequeue_tid(pthread_mutex_t *mutex, int tid){
 			}
 			temp->next = temp->next->next;
 			//printf("temp next executed!\n");	
-			//free(temp->next);
+			free(temp->next);
 			break;
 		} 
                 temp = temp->next;
@@ -151,8 +151,9 @@ __pthread_mutex_lock (pthread_mutex_t *mutex)
       FORCE_ELISION (mutex, goto elision);
     simple:
 //	printf("IN SIMPLE");
-        ahmed_enqueue_tid(mutex,self_pid );
-
+       if(self_pid!=0){
+		 ahmed_enqueue_tid(mutex,self_pid );
+	}
       /* Normal mutex.  */
       LLL_MUTEX_LOCK (mutex);
      dequeue_tid(mutex,self_pid );

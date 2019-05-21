@@ -8,12 +8,11 @@
 
 
 
-
-
 void * thread_func(void * args){
+	double k;	
 	for(int i =0; i< 10000000 ; i++){
 		for(int j = 0 ; j < 10000; j++){
-			int k = i*j;
+			 k = i*j;
 		}
 	}
 }
