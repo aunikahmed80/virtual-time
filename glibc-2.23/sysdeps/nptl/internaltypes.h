@@ -144,6 +144,17 @@ struct pthread_key_struct
 #define RWLOCK_RECURSIVE(rwlock) ((rwlock)->__data.__flags != 0)
 
 
+typedef struct vtime_node
+{
+  int tid;
+  unsigned long *times_at_request;
+  struct vtime_node *prev;
+  struct vtime_node *next;
+
+} vtime_node;
+
+
+
 /* Semaphore variable structure.  */
 struct new_sem
 {
@@ -170,6 +181,10 @@ struct new_sem
   int pad;
   unsigned int nwaiters;
 #endif
+  pthread_spinlock_t lock;
+  vtime_node  waiter_list;
+
+
 };
 
 struct old_sem
