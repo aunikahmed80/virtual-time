@@ -58,6 +58,7 @@ int
 __pthread_mutex_init (pthread_mutex_t *mutex,
 		      const pthread_mutexattr_t *mutexattr)
 {
+
   const struct pthread_mutexattr *imutexattr;
   assert (sizeof (pthread_mutex_t) <= __SIZEOF_PTHREAD_MUTEX_T);
  	
@@ -93,7 +94,8 @@ __pthread_mutex_init (pthread_mutex_t *mutex,
 	//////////////////////////////////////////
 	 mutex->__data.waiter_list.next = NULL;
           mutex->__data.waiter_list.prev = NULL;
-
+	 mutex->__data.lock_acquisition_v_time = 0;
+	 mutex->__data.lock_acquisition_g_time = 0;
 
   if ((imutexattr->mutexkind & PTHREAD_MUTEXATTR_FLAG_ROBUST) != 0)
     {

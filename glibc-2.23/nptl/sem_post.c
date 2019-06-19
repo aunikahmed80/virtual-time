@@ -76,8 +76,10 @@ __new_sem_post (sem_t *sem)
   if ((v & SEM_NWAITERS_MASK) != 0)
     futex_wake (&isem->value, 1, private);
 #endif
+/////////////////////////////////////////////////// Ahmed code/////////////////////////////////////////////////////////////////////////
   isem->latest_post_from = (int) syscall(__NR_gettid);
   isem->latest_time_at_posting = (double)syscall(333,isem->latest_post_from);
+//////////////////////////////////////////////////////////////////////////////////////////
   return 0;
 }
 versioned_symbol (libpthread, __new_sem_post, sem_post, GLIBC_2_1);

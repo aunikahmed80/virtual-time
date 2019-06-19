@@ -2576,15 +2576,20 @@ SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
 	return 0;
 }
 
-SYSCALL_DEFINE1(v_time, int, arg0)
+SYSCALL_DEFINE1(v_time, int, arg0) //333
 {
         struct pid *pid_struct;
         struct task_struct *t;
         pid_struct = find_get_pid(arg0);
-        t = pid_task(pid_struct,PIDTYPE_PID);
+	if(pid_struct == NULL) {return 1;}
+        //t =find_task_by_vpid(arg0);//
+	t =  pid_task(pid_struct,PIDTYPE_PID);
+	if(t == NULL) {return 1;}
 
   printk(KERN_INFO "v_time syscall called with %d \t @ v_time %llu\n",arg0,t->se.on_cpu_time  );
   return t->se.on_cpu_time ;
+
+
 }
 
 
@@ -2602,7 +2607,6 @@ SYSCALL_DEFINE1(group_vtime, int, arg0) //return max v_time in thread group
 		return parent->se.on_cpu_time;
 	}
 }
-
 
 SYSCALL_DEFINE2(add_vtime, int, arg0, long long int, delta_v)
 {
@@ -2653,6 +2657,39 @@ SYSCALL_DEFINE1(exec_start_gtime, int, arg0)
   return t->se.exec_start_gtime ;
 }
 
+
+SYSCALL_DEFINE3(copy_times,
+                unsigned long , num_thread,
+                unsigned long *, thread_times,
+                int, arg0)
+{
+
+	unsigned long vtimes [num_thread+1][3]; //(unsigned long*) kmalloc(sizeof(unsigned long),GFP_KERNEL);
+
+	struct pid *pid_struct;
+        struct task_struct *initial_task,*t;
+
+        pid_struct = find_get_pid(arg0);
+        initial_task = pid_task(pid_struct,PIDTYPE_PID);
+
+        t = initial_task;
+        int i = 1; 
+	do{
+		 vtimes[i][0] = t->pid;
+                 vtimes[i][1] = t->se.on_cpu_time;
+		 vtimes[i][2] = t->se.exec_start_gtime;
+
+                t = next_thread(t);
+		i++;
+          }while(t!=initial_task);
+
+	vtimes[0][0] = i-1;
+    if (copy_to_user(thread_times, &vtimes, (num_thread+1)*3*sizeof(unsigned long)));
+       // return -EFAULT;
+
+    /* return amount of data copied */
+    return i-1;
+}
 
 
 

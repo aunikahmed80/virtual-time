@@ -66,13 +66,13 @@ static int __pthread_mutex_lock_full (pthread_mutex_t *mutex)
      __attribute_noinline__;
 
 //////////////////////////////////////////////////////////////////////////////////added function//////////////////////////////////////////////
+
 static double g_time_ms(void){
 	struct timeval g_time;
         gettimeofday(&g_time , NULL);
         double g_ms = (double)g_time.tv_sec*1000000 + (double)g_time.tv_usec;
 	return g_ms;
 }
-
 
 
 static void ahmed_enqueue_tid(pthread_mutex_t *mutex, int tid){
@@ -91,23 +91,16 @@ static void ahmed_enqueue_tid(pthread_mutex_t *mutex, int tid){
 	}
 	mutex->__data.waiter_list.next = new_node;
 	
-/* 	__v_t_list *temp = &mutex->__data.waiter_list;
-	int i= 0;
-	while(temp->next !=NULL){
-		i++;
-	//	printf("thread %d pid: %d\n",i,temp->next->tid);
-		temp = temp->next;
-	}
-	//printf("exit enqueue \n");
-*/
 }
 
 static void dequeue_tid(pthread_mutex_t *mutex, int tid){
 //printf("Dequeue called with %d\n",tid);
 
 	__v_t_list *temp = &mutex->__data.waiter_list;
+	__v_t_list  *node_2b_deleted;
 		while(temp->next !=NULL){
                if(temp->next->tid == tid){
+			node_2b_deleted = temp->next;
 		//	printf("Found match in dequeue %d\n",tid);
 			if(temp->next->next!= NULL){
 				//printf("enter if !");
@@ -117,7 +110,7 @@ static void dequeue_tid(pthread_mutex_t *mutex, int tid){
 			}
 			temp->next = temp->next->next;
 			//printf("temp next executed!\n");	
-			free(temp->next);
+			free(node_2b_deleted);
 			break;
 		} 
                 temp = temp->next;
@@ -131,12 +124,11 @@ int
 __pthread_mutex_lock (pthread_mutex_t *mutex)
 {
   assert (sizeof (mutex->__size) >= sizeof (mutex->__data));
-
   unsigned int type = PTHREAD_MUTEX_TYPE_ELISION (mutex);
 
   LIBC_PROBE (mutex_entry, 1, mutex);
   //int self_pid = gettid();
-    int self_pid =(int) syscall(__NR_gettid);
+   int self_pid =(int) syscall(__NR_gettid);
 
   //pthread_id_np_t   tid;
  // int self_pid  =(int)pthread_getthreadid_np();
@@ -151,9 +143,7 @@ __pthread_mutex_lock (pthread_mutex_t *mutex)
       FORCE_ELISION (mutex, goto elision);
     simple:
 //	printf("IN SIMPLE");
-       if(self_pid!=0){
-		 ahmed_enqueue_tid(mutex,self_pid );
-	}
+	 ahmed_enqueue_tid(mutex,self_pid );
       /* Normal mutex.  */
       LLL_MUTEX_LOCK (mutex);
      dequeue_tid(mutex,self_pid );
@@ -241,9 +231,10 @@ __pthread_mutex_lock (pthread_mutex_t *mutex)
   ++mutex->__data.__nusers;
 #endif
 	
-    mutex->__data.lock_acquisition_g_time = g_time_ms();
-  mutex->__data.lock_acquisition_v_time = (double) syscall(333,(int)mutex->__data.__owner);
- 	printf("\n\nowner:%d\tlock acquisition_v_time:%lf \tlock acquisition_g_time:%lf\n",(int)(mutex->__data.__owner), mutex->__data.lock_acquisition_v_time/10e8, mutex->__data.lock_acquisition_g_time);
+   mutex->__data.lock_acquisition_g_time = g_time_ms();
+//	printf("Owner: %d\n", (int)mutex->__data.__owner);
+   mutex->__data.lock_acquisition_v_time = (double) syscall(333,(int)mutex->__data.__owner);
+// 	printf("\n\nowner:%d\tlock acquisition_v_time:%lf \tlock acquisition_g_time:%lf\n",(int)(mutex->__data.__owner), mutex->__data.lock_acquisition_v_time/10e8, mutex->__data.lock_acquisition_g_time);
 //	printf("\nowner:%d\texac_start_gtime in micro sec:%lf\n",(int)(mutex->__data.__owner),(double) syscall(337,(int)mutex->__data.__owner)/1000); //division by 1000 to convert nano to micro
   LIBC_PROBE (mutex_acquired, 1, mutex);
  return 0;

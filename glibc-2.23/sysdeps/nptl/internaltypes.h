@@ -181,6 +181,8 @@ struct new_sem
   int pad;
   unsigned int nwaiters;
 #endif
+  int latest_post_from;
+  double latest_time_at_posting;
   pthread_spinlock_t lock;
   vtime_node  waiter_list;
 

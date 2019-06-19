@@ -60,7 +60,7 @@ static void add_vtime(pthread_mutex_t *mutex){
 		}
 		else{
 			delta_v = (double)syscall(333,mutex->__data.__owner) - temp->next->lock_holder_v_time_at_request;
-			//printf("Request time is larger, delta_v: %lld\n",delta_v);
+		//	printf("Request time is larger, delta_v: %lld\n",delta_v);
 		}
 		double elapsed_time_since_last_vtime_update =g_time_ms() - (double)syscall(337,mutex->__data.__owner)/1000; 
 		delta_v += elapsed_time_since_last_vtime_update;

@@ -22,6 +22,7 @@
 
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <stdio.h>
 /***************************************************************Ahmed code*************************************/
 
 static void enqueue_tid(struct new_sem* semaphore, int tid){
@@ -40,16 +41,50 @@ static void enqueue_tid(struct new_sem* semaphore, int tid){
         }
         semaphore->waiter_list.next = new_node;
 
-/*      __v_t_list *temp = &mutex->__data.waiter_list;
-        int i= 0;
-        while(temp->next !=NULL){
-                i++;
-        //      printf("thread %d pid: %d\n",i,temp->next->tid);
+}
+
+
+static void add_waiting_time(struct new_sem* semaphore, int tid){
+//printf("Dequeue called with %d\n",tid);
+
+	//remove node from link_list
+
+        vtime_node *temp = &semaphore->waiter_list;
+	vtime_node *node_2b_deleted = NULL;
+                while(temp->next !=NULL){
+               if(temp->next->tid == tid){
+			node_2b_deleted = temp->next;
+                //      printf("Found match in dequeue %d\n",tid);
+                        if(temp->next->next!= NULL){ // more nodes after it 
+                                //printf("enter if !");
+			
+                                temp->next->next->prev = temp;
+                                //printf("if executed!\n");
+                        }
+                        temp->next = temp->next->next;
+                        //printf("temp next executed!\n");      
+			 break;
+                }
                 temp = temp->next;
         }
-        //printf("exit enqueue \n");
-*/
+
+	//Add waiting time to the waiter
+	int i;
+	double waiting_time = 0 ;
+	for(i= 1; i<node_2b_deleted->times_at_request[0]; i++){ // 0th index contain the number of thread running at the wait call by this thread
+		if (node_2b_deleted->times_at_request[3*i]==semaphore->latest_post_from){
+			waiting_time = semaphore->latest_time_at_posting - node_2b_deleted->times_at_request[3*i+1];
+			break;	
+		}
+	
+	}
+        free(node_2b_deleted);
+	printf("waiting time for semaphore:%lf\n",waiting_time);
+	syscall(334, tid, (long long int)waiting_time);
+                       
+
 }
+
 
 
 /***************************************************************End********************************************/
@@ -75,7 +110,10 @@ __new_sem_wait (sem_t *sem)
 	int self_pid =(int) syscall(__NR_gettid);
 	struct new_sem* semaphore =(struct new_sem *) sem;
 	enqueue_tid(semaphore,self_pid);
-    return __new_sem_wait_slow(semaphore, NULL);
+    	
+	int err = __new_sem_wait_slow(semaphore, NULL);
+	add_waiting_time(semaphore, self_pid);
+	return err;
 	
 
      }
