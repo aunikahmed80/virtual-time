@@ -68,6 +68,8 @@
 #include <asm/pgtable.h>
 #include <asm/mmu_context.h>
 
+
+#include <linux/hashtable.h>
 static void __unhash_process(struct task_struct *p, bool group_dead)
 {
 	nr_threads--;
@@ -782,7 +784,12 @@ void __noreturn do_exit(long code)
 		parent->se.mx_on_cpu_time = tsk->se.on_cpu_time;
 	}
         
-
+	struct vtime_struct vtst = {
+     		.pid = (pid_t)tsk->pid,
+		.vtime = tsk->se.on_cpu_time,
+     		.next = 0    /* Will be initilaized when added to the hashtable */
+	} ;
+	hash_add(parent->se.child_vtime_at_exit, &vtst.next, vtst.pid);
 
 
 /***********************************code ends**********************************/

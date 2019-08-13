@@ -27,7 +27,7 @@
 #include <linux/signal_types.h>
 #include <linux/mm_types_task.h>
 #include <linux/task_io_accounting.h>
-
+#include <linux/hashtable.h>
 /* task_struct member predeclarations (sorted alphabetically): */
 struct audit_context;
 struct backing_dev_info;
@@ -455,10 +455,14 @@ struct sched_entity {
 	u64				sum_exec_runtime;
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;
+///////////////////////////////////////////////////////////////////////////////////Ahmed code////////////////////////
+
 	u64                             on_cpu_time;
 	u64				del_exec;
 	u64				mx_on_cpu_time;
-
+	u64				base_on_cpu_time;	
+	DECLARE_HASHTABLE(child_vtime_at_exit,4);
+///////////////////////////////////////////////////////////////////////////////////end////////////////////////////////
 	u64				nr_migrations;
 
 	struct sched_statistics		statistics;

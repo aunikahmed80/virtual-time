@@ -70,7 +70,7 @@
 #include <linux/uaccess.h>
 #include <asm/io.h>
 #include <asm/unistd.h>
-
+#include <linux/hashtable.h>
 /* Hardening for Spectre-v1 */
 #include <linux/nospec.h>
 
@@ -2575,7 +2575,7 @@ SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
 
 	return 0;
 }
-
+////////////////////////////////////////////////////////////////////Ahmed code////////////////////////////////////////
 SYSCALL_DEFINE1(v_time, int, arg0) //333
 {
         struct pid *pid_struct;
@@ -2602,10 +2602,15 @@ SYSCALL_DEFINE1(group_vtime, int, arg0) //return max v_time in thread group
 	struct task_struct *parent = t->group_leader;
 	
 	if(parent->se.mx_on_cpu_time > parent->se.on_cpu_time){
-		return parent->se.mx_on_cpu_time;
+	printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.mx_on_cpu_time  );
+
+		return parent->se.mx_on_cpu_time - parent->se.base_on_cpu_time;
 	}else{
-		return parent->se.on_cpu_time;
+		printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.on_cpu_time  );
+		return parent->se.on_cpu_time - parent->se.base_on_cpu_time;
 	}
+
+
 }
 
 SYSCALL_DEFINE2(add_vtime, int, arg0, long long int, delta_v)
@@ -2633,6 +2638,19 @@ SYSCALL_DEFINE2(set_vtime, int, arg0, long long int, v_time)
   return t->se.on_cpu_time ;
 }
 
+SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)
+{
+
+	struct vtime_struct *vtst;
+
+ 	hash_for_each_possible(current->se.child_vtime_at_exit, vtst, next, (pid_t)child_pid)
+                if (vtst->pid == (pid_t)child_pid){
+			current->se.on_cpu_time = vtst->vtime > current->se.on_cpu_time?vtst->vtime:current->se.on_cpu_time;		
+		}
+	
+//  printk(KERN_INFO "add_vtime syscall called with %d \tdelta: %d\n",arg0,delta_v  );
+  return current->se.on_cpu_time ;
+}
 
 
 SYSCALL_DEFINE1(del_exec, int, arg0)
@@ -2692,7 +2710,7 @@ SYSCALL_DEFINE3(copy_times,
 }
 
 
-
+//////////////////////////////////////////////////////////////////////////////////end/////////////////////////////////////////
 
 #ifdef CONFIG_COMPAT
 struct compat_sysinfo {
