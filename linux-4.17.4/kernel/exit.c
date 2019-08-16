@@ -789,7 +789,9 @@ void __noreturn do_exit(long code)
 		.vtime = tsk->se.on_cpu_time,
      		.next = 0    /* Will be initilaized when added to the hashtable */
 	} ;
-	hash_add(parent->se.child_vtime_at_exit, &vtst.next, vtst.pid);
+	printk(KERN_INFO "print form do_exit parent_id%d \thash_size: %d\n",parent->pid, HASH_SIZE(parent->se.child_vtime_at_exit) );
+
+	//hash_add(parent->se.child_vtime_at_exit, &vtst.next, vtst.pid);
 
 
 /***********************************code ends**********************************/

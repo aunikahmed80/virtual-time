@@ -461,7 +461,9 @@ struct sched_entity {
 	u64				del_exec;
 	u64				mx_on_cpu_time;
 	u64				base_on_cpu_time;	
-	DECLARE_HASHTABLE(child_vtime_at_exit,4);
+	struct hlist_head child_vtime_at_exit[8];
+
+//	DECLARE_HASHTABLE(child_vtime_at_exit,4);
 ///////////////////////////////////////////////////////////////////////////////////end////////////////////////////////
 	u64				nr_migrations;
 
