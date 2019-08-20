@@ -69,7 +69,7 @@
 #include <asm/mmu_context.h>
 
 
-#include <linux/hashtable.h>
+#include <linux/list.h>
 static void __unhash_process(struct task_struct *p, bool group_dead)
 {
 	nr_threads--;
@@ -784,12 +784,17 @@ void __noreturn do_exit(long code)
 		parent->se.mx_on_cpu_time = tsk->se.on_cpu_time;
 	}
         
-	struct vtime_struct vtst = {
+	/*struct vtime_struct vtst = {
      		.pid = (pid_t)tsk->pid,
 		.vtime = tsk->se.on_cpu_time,
-     		.next = 0    /* Will be initilaized when added to the hashtable */
-	} ;
-	printk(KERN_INFO "print form do_exit parent_id%d \thash_size: %d\n",parent->pid, HASH_SIZE(parent->se.child_vtime_at_exit) );
+     		.next = 0    
+	} ;*/
+
+ 	struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
+        vtst->pid = tsk->pid;
+	vtst->vtime = tsk->se.on_cpu_time; 
+        list_add ( &vtst->next , &parent->se.child_vtime_at_exit ) ;
+	//printk(KERN_INFO "print form do_exit parent_id%d \thash_size: %d\n",parent->pid, HASH_SIZE(parent->se.child_vtime_at_exit) );
 
 	//hash_add(parent->se.child_vtime_at_exit, &vtst.next, vtst.pid);
 

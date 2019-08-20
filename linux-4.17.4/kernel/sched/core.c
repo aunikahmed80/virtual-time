@@ -19,8 +19,8 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
 
-#include <linux/hashtable.h>
-
+#include <linux/list.h>
+#include <linux/spinlock.h>
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 #if defined(CONFIG_SCHED_DEBUG) && defined(HAVE_JUMP_LABEL)
@@ -2173,7 +2173,9 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.on_cpu_time               = current->se.on_cpu_time;
 	p->se.base_on_cpu_time          = current->se.on_cpu_time;
 	p->se.mx_on_cpu_time		= 0;
-	hash_init(p->se.child_vtime_at_exit);
+	INIT_LIST_HEAD(&p->se.child_vtime_at_exit);
+//	hash_init(p->se.child_vtime_at_exit);
+//	spin_lock_init(&p->se.ht_lock);
 //////////////////////////////////////////////////////////////////////////////////////end//////////////////////////
 	p->se.nr_migrations		= 0;
 	p->se.vruntime			= 0;

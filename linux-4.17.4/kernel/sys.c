@@ -70,7 +70,7 @@
 #include <linux/uaccess.h>
 #include <asm/io.h>
 #include <asm/unistd.h>
-#include <linux/hashtable.h>
+#include <linux/list.h>
 /* Hardening for Spectre-v1 */
 #include <linux/nospec.h>
 
@@ -2641,12 +2641,46 @@ SYSCALL_DEFINE2(set_vtime, int, arg0, long long int, v_time)
 SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)
 {
 
-	struct vtime_struct *vtst;
 
- 	hash_for_each_possible(current->se.child_vtime_at_exit, vtst, next, (pid_t)child_pid)
-                if (vtst->pid == (pid_t)child_pid){
+/*  struct vtime_struct vtst = {
+                .pid = (pid_t)child_pid,
+                .vtime = 10,
+                .next = LIST_HEAD_INIT(vtst.next)    
+        } ;
+*/
+
+/*	struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
+	vtst->pid = child_pid;
+	list_add ( &vtst->next , &current->se.child_vtime_at_exit ) ;
+*/
+
+
+struct vtime_struct  *datastructureptr = NULL ; 
+list_for_each_entry ( datastructureptr , &current->se.child_vtime_at_exit, next ) 
+    { 
+         printk (KERN_INFO  "data  =  %d\n" , datastructureptr->pid );
+	if(datastructureptr->pid == 5){
+		list_del(&datastructureptr->next);
+		break;
+	} 
+    }
+
+
+//        hash_add(current->se.child_vtime_at_exit, &vtst.next, vtst.pid);
+	
+	//struct vtime_struct *vt;
+
+
+/* 	hash_for_each_possible(current->se.child_vtime_at_exit, vt, next, (pid_t)child_pid)
+        	printk(KERN_INFO "print form sycn_vt pid:%d \tchild_pid:%d \thash_size:%d\n",current->pid,child_pid, vt->pid );
+*/
+       
+       /* if (vt->pid == (pid_t)child_pid){
 			current->se.on_cpu_time = vtst->vtime > current->se.on_cpu_time?vtst->vtime:current->se.on_cpu_time;		
-		}
+		}*/
+
+
+
 	
 //  printk(KERN_INFO "add_vtime syscall called with %d \tdelta: %d\n",arg0,delta_v  );
   return current->se.on_cpu_time ;
