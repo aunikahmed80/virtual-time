@@ -16,12 +16,6 @@
 
 
 
-struct vtime_struct {
-     pid_t pid;
-     u64 vtime ;
-     struct hlist_node next;
-} ;
-
 #define DEFINE_HASHTABLE(name, bits)						\
 	struct hlist_head name[1 << (bits)] =					\
 			{ [0 ... ((1 << (bits)) - 1)] = HLIST_HEAD_INIT }
