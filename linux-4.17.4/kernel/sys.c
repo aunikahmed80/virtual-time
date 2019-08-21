@@ -2648,40 +2648,41 @@ SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)
                 .next = LIST_HEAD_INIT(vtst.next)    
         } ;
 */
+	int i = 0;
+	for (i=0; i< 10;i++){
 
-/*	struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
-	vtst->pid = child_pid;
+	struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
+	vtst->pid = i;
 	list_add ( &vtst->next , &current->se.child_vtime_at_exit ) ;
-*/
+	}
 
 
 struct vtime_struct  *datastructureptr = NULL ; 
 list_for_each_entry ( datastructureptr , &current->se.child_vtime_at_exit, next ) 
-    { 
+    {
+	 
          printk (KERN_INFO  "data  =  %d\n" , datastructureptr->pid );
-	if(datastructureptr->pid == 5){
-		list_del(&datastructureptr->next);
-		break;
-	} 
+	//if(datastructureptr->pid == 5){
+/*	if (prev != NULL){	
+		list_del(&prev->next);
+		kfree(prev);
+	}
+	prev = datastructureptr; 
+		//break;
+	//	kfree(to_b_deleted);
+
+
+	//} */
     }
+struct vtime_struct *tmp;
+struct list_head *pos, *q;
 
-
-//        hash_add(current->se.child_vtime_at_exit, &vtst.next, vtst.pid);
-	
-	//struct vtime_struct *vt;
-
-
-/* 	hash_for_each_possible(current->se.child_vtime_at_exit, vt, next, (pid_t)child_pid)
-        	printk(KERN_INFO "print form sycn_vt pid:%d \tchild_pid:%d \thash_size:%d\n",current->pid,child_pid, vt->pid );
-*/
-       
-       /* if (vt->pid == (pid_t)child_pid){
-			current->se.on_cpu_time = vtst->vtime > current->se.on_cpu_time?vtst->vtime:current->se.on_cpu_time;		
-		}*/
-
-
-
-	
+list_for_each_safe(pos, q, &current->se.child_vtime_at_exit){
+         tmp= list_entry(pos, struct vtime_struct, next);
+         printk(KERN_INFO "freeing item pid= %d\n", tmp->pid);
+         list_del(pos);
+         kfree(tmp);
+    }
 //  printk(KERN_INFO "add_vtime syscall called with %d \tdelta: %d\n",arg0,delta_v  );
   return current->se.on_cpu_time ;
 }
