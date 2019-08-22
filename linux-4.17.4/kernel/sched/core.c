@@ -38,7 +38,7 @@ const_debug unsigned int sysctl_sched_features =
 	0;
 #undef SCHED_FEAT
 #endif
-
+int pthread_join_activated = 0;
 /*
  * Number of tasks to iterate in a single balance run.
  * Limited because this is done with IRQs disabled.
@@ -2175,7 +2175,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.mx_on_cpu_time		= 0;
 	INIT_LIST_HEAD(&p->se.child_vtime_at_exit);
 //	hash_init(p->se.child_vtime_at_exit);
-//	spin_lock_init(&p->se.ht_lock);
+	spin_lock_init(&p->se.child_vtlist_lock);
 //////////////////////////////////////////////////////////////////////////////////////end//////////////////////////
 	p->se.nr_migrations		= 0;
 	p->se.vruntime			= 0;

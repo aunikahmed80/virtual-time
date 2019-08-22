@@ -789,32 +789,35 @@ void __noreturn do_exit(long code)
 		.vtime = tsk->se.on_cpu_time,
      		.next = 0    
 	} ;*/
+	extern int pthread_join_activated;
 
-	struct vtime_struct *tmp;
-	struct list_head *pos, *q;
-	// delete every child vtime record
-	list_for_each_safe(pos, q, &current->se.child_vtime_at_exit){
-        	tmp= list_entry(pos, struct vtime_struct, next);
-         	//printk(KERN_INFO "freeing item pid= %d\n", tmp->pid);
-         	list_del(pos);
-         	kfree(tmp);
-    	}
+	if (pthread_join_activated >0 ){ 
+		struct vtime_struct *tmp;
+		struct list_head *pos, *q;
+		// delete every child vtime record
+		list_for_each_safe(pos, q, &current->se.child_vtime_at_exit){
+        		tmp= list_entry(pos, struct vtime_struct, next);
+         		//printk(KERN_INFO "freeing item pid= %d\n", tmp->pid);
+         		list_del(pos);
+         		kfree(tmp);
+    		}
 
 
 
-	if (tsk->pid != parent->pid){
+		if (tsk->pid != parent->pid){
 
- 		struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
-        	if (vtst!=NULL){
-			vtst->pid = tsk->pid;
-			vtst->vtime = tsk->se.on_cpu_time;
-			//kfree(vtst);
-			spin_lock(&parent->se.child_vtlist_lock);
-       			list_add ( &vtst->next , &parent->se.child_vtime_at_exit ) ;
-			spin_unlock(&parent->se.child_vtlist_lock);
+ 			struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
+        		if (vtst!=NULL){
+				vtst->pid = tsk->pid;
+				vtst->vtime = tsk->se.on_cpu_time;
+				//kfree(vtst);
+				spin_lock(&parent->se.child_vtlist_lock);
+       				list_add ( &vtst->next , &parent->se.child_vtime_at_exit ) ;
+				spin_unlock(&parent->se.child_vtlist_lock);
  
-		}
+			}
 
+		}
 	}
 	//printk(KERN_INFO "print form do_exit parent_id%d \thash_size: %d\n",parent->pid, HASH_SIZE(parent->se.child_vtime_at_exit) );
 

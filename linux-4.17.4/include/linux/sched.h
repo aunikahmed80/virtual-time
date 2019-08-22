@@ -464,7 +464,7 @@ struct sched_entity {
 
 	struct list_head child_vtime_at_exit;
 //	struct hlist_head child_vtime_at_exit[1 << (4)];
-//	spinlock_t ht_lock;
+	spinlock_t child_vtlist_lock;
 //	DECLARE_HASHTABLE(child_vtime_at_exit,4);
 ///////////////////////////////////////////////////////////////////////////////////end////////////////////////////////
 	u64				nr_migrations;
