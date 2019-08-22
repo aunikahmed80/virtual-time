@@ -804,15 +804,18 @@ void __noreturn do_exit(long code)
 
 	if (tsk->pid != parent->pid){
 
- 	struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
-        if (vtst!=NULL){
-		vtst->pid = tsk->pid;
-		vtst->vtime = tsk->se.on_cpu_time;
-			kfree(vtst); 
-	}
+ 		struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
+        	if (vtst!=NULL){
+			vtst->pid = tsk->pid;
+			vtst->vtime = tsk->se.on_cpu_time;
+			//kfree(vtst);
+			spin_lock(&parent->se.child_vtlist_lock);
+       			list_add ( &vtst->next , &parent->se.child_vtime_at_exit ) ;
+			spin_unlock(&parent->se.child_vtlist_lock);
+ 
+		}
 
 	}
-        //list_add ( &vtst->next , &parent->se.child_vtime_at_exit ) ;
 	//printk(KERN_INFO "print form do_exit parent_id%d \thash_size: %d\n",parent->pid, HASH_SIZE(parent->se.child_vtime_at_exit) );
 
 	//hash_add(parent->se.child_vtime_at_exit, &vtst.next, vtst.pid);
