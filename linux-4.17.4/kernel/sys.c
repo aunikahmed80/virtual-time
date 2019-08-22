@@ -2648,41 +2648,26 @@ SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)
                 .next = LIST_HEAD_INIT(vtst.next)    
         } ;
 */
-	int i = 0;
-	for (i=0; i< 10;i++){
-
-	struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
-	vtst->pid = i;
-	list_add ( &vtst->next , &current->se.child_vtime_at_exit ) ;
+	extern int pthread_join_activated;
+	if(child_pid == -1){//activate pthread_join
+		pthread_join_activated = 1;
+		return current->se.on_cpu_time ;
+		
 	}
+	if (pthread_join_activated > 0){
+		struct vtime_struct *tmp;
+		struct list_head *pos, *q;
 
-
-struct vtime_struct  *datastructureptr = NULL ; 
-list_for_each_entry ( datastructureptr , &current->se.child_vtime_at_exit, next ) 
-    {
-	 
-         printk (KERN_INFO  "data  =  %d\n" , datastructureptr->pid );
-	//if(datastructureptr->pid == 5){
-/*	if (prev != NULL){	
-		list_del(&prev->next);
-		kfree(prev);
+		list_for_each_safe(pos, q, &current->se.child_vtime_at_exit){
+        		tmp= list_entry(pos, struct vtime_struct, next);
+         		printk(KERN_INFO "freeing item pid= %d\n", tmp->pid);
+         		current->se.on_cpu_time = current->se.on_cpu_time > tmp->vtime?current->se.on_cpu_time:tmp->vtime;
+			spin_lock(&current->se.child_vtlist_lock);
+			list_del(pos);
+         		spin_unlock(&current->se.child_vtlist_lock);
+			kfree(tmp);
+    		}
 	}
-	prev = datastructureptr; 
-		//break;
-	//	kfree(to_b_deleted);
-
-
-	//} */
-    }
-struct vtime_struct *tmp;
-struct list_head *pos, *q;
-
-list_for_each_safe(pos, q, &current->se.child_vtime_at_exit){
-         tmp= list_entry(pos, struct vtime_struct, next);
-         printk(KERN_INFO "freeing item pid= %d\n", tmp->pid);
-         list_del(pos);
-         kfree(tmp);
-    }
 //  printk(KERN_INFO "add_vtime syscall called with %d \tdelta: %d\n",arg0,delta_v  );
   return current->se.on_cpu_time ;
 }
