@@ -790,10 +790,29 @@ void __noreturn do_exit(long code)
      		.next = 0    
 	} ;*/
 
+	struct vtime_struct *tmp;
+	struct list_head *pos, *q;
+	// delete every child vtime record
+	list_for_each_safe(pos, q, &current->se.child_vtime_at_exit){
+        	tmp= list_entry(pos, struct vtime_struct, next);
+         	//printk(KERN_INFO "freeing item pid= %d\n", tmp->pid);
+         	list_del(pos);
+         	kfree(tmp);
+    	}
+
+
+
+	if (tsk->pid != parent->pid){
+
  	struct vtime_struct *vtst = kmalloc(sizeof(struct vtime_struct *),GFP_KERNEL);
-        vtst->pid = tsk->pid;
-	vtst->vtime = tsk->se.on_cpu_time; 
-        list_add ( &vtst->next , &parent->se.child_vtime_at_exit ) ;
+        if (vtst!=NULL){
+		vtst->pid = tsk->pid;
+		vtst->vtime = tsk->se.on_cpu_time;
+			kfree(vtst); 
+	}
+
+	}
+        //list_add ( &vtst->next , &parent->se.child_vtime_at_exit ) ;
 	//printk(KERN_INFO "print form do_exit parent_id%d \thash_size: %d\n",parent->pid, HASH_SIZE(parent->se.child_vtime_at_exit) );
 
 	//hash_add(parent->se.child_vtime_at_exit, &vtst.next, vtst.pid);
