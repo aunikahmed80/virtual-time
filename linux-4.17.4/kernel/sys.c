@@ -2586,7 +2586,7 @@ SYSCALL_DEFINE1(v_time, int, arg0) //333
 	t =  pid_task(pid_struct,PIDTYPE_PID);
 	if(t == NULL) {return 1;}
 
-  printk(KERN_INFO "v_time syscall called with %d \t @ v_time %llu\n",arg0,t->se.on_cpu_time  );
+//  printk(KERN_INFO "v_time syscall called with %d \t @ v_time %llu\n",arg0,t->se.on_cpu_time  );
   return t->se.on_cpu_time ;
 
 
@@ -2602,11 +2602,11 @@ SYSCALL_DEFINE1(group_vtime, int, arg0) //return max v_time in thread group
 	struct task_struct *parent = t->group_leader;
 	
 	if(parent->se.mx_on_cpu_time > parent->se.on_cpu_time){
-	printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.mx_on_cpu_time  );
+//	printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.mx_on_cpu_time  );
 
 		return parent->se.mx_on_cpu_time - parent->se.base_on_cpu_time;
 	}else{
-		printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.on_cpu_time  );
+//		printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.on_cpu_time  );
 		return parent->se.on_cpu_time - parent->se.base_on_cpu_time;
 	}
 
@@ -2660,7 +2660,7 @@ SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)
 
 		list_for_each_safe(pos, q, &current->se.child_vtime_at_exit){
         		tmp= list_entry(pos, struct vtime_struct, next);
-         		printk(KERN_INFO "freeing item pid= %d\n", tmp->pid);
+         		printk(KERN_INFO "freeing item pid= %d child_vtime:%llu parent_vtime:%llu\n", tmp->pid,tmp->vtime,current->se.on_cpu_time);
          		current->se.on_cpu_time = current->se.on_cpu_time > tmp->vtime?current->se.on_cpu_time:tmp->vtime;
 			spin_lock(&current->se.child_vtlist_lock);
 			list_del(pos);

@@ -66,7 +66,7 @@ static int __pthread_mutex_lock_full (pthread_mutex_t *mutex)
      __attribute_noinline__;
 
 //////////////////////////////////////////////////////////////////////////////////added function//////////////////////////////////////////////
-
+/*
 static double g_time_ms(void){
 	struct timeval g_time;
         gettimeofday(&g_time , NULL);
@@ -118,7 +118,7 @@ static void dequeue_tid(pthread_mutex_t *mutex, int tid){
 
 
 }
-
+*/
 //////////////////////////////////////////////////////////////////////////End of added function//////////////////////////////////////////////////
 int
 __pthread_mutex_lock (pthread_mutex_t *mutex)
@@ -128,7 +128,7 @@ __pthread_mutex_lock (pthread_mutex_t *mutex)
 
   LIBC_PROBE (mutex_entry, 1, mutex);
   //int self_pid = gettid();
-   int self_pid =(int) syscall(__NR_gettid);
+   //int self_pid =(int) syscall(__NR_gettid);
 
   //pthread_id_np_t   tid;
  // int self_pid  =(int)pthread_getthreadid_np();
@@ -143,10 +143,10 @@ __pthread_mutex_lock (pthread_mutex_t *mutex)
       FORCE_ELISION (mutex, goto elision);
     simple:
 //	printf("IN SIMPLE");
-	 ahmed_enqueue_tid(mutex,self_pid );
+//	 ahmed_enqueue_tid(mutex,self_pid );
       /* Normal mutex.  */
       LLL_MUTEX_LOCK (mutex);
-     dequeue_tid(mutex,self_pid );
+  //   dequeue_tid(mutex,self_pid );
 
       assert (mutex->__data.__owner == 0);
     }
@@ -231,9 +231,9 @@ __pthread_mutex_lock (pthread_mutex_t *mutex)
   ++mutex->__data.__nusers;
 #endif
 	
-   mutex->__data.lock_acquisition_g_time = g_time_ms();
+   //mutex->__data.lock_acquisition_g_time = g_time_ms();
 //	printf("Owner: %d\n", (int)mutex->__data.__owner);
-   mutex->__data.lock_acquisition_v_time = (double) syscall(333,(int)mutex->__data.__owner);
+   //mutex->__data.lock_acquisition_v_time = (double) syscall(333,(int)mutex->__data.__owner);
 // 	printf("\n\nowner:%d\tlock acquisition_v_time:%lf \tlock acquisition_g_time:%lf\n",(int)(mutex->__data.__owner), mutex->__data.lock_acquisition_v_time/10e8, mutex->__data.lock_acquisition_g_time);
 //	printf("\nowner:%d\texac_start_gtime in micro sec:%lf\n",(int)(mutex->__data.__owner),(double) syscall(337,(int)mutex->__data.__owner)/1000); //division by 1000 to convert nano to micro
   LIBC_PROBE (mutex_acquired, 1, mutex);

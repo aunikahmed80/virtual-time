@@ -36,7 +36,7 @@ __pthread_mutex_unlock_full (pthread_mutex_t *mutex, int decr)
      __attribute_noinline__;
 
 ///////////////////////////////////////////////////////////////// Added function//////////////////////////////////////////////////////////////////
-
+/*
 static double g_time_ms(void){
         struct timeval g_time;
         gettimeofday(&g_time , NULL);
@@ -69,7 +69,7 @@ static void add_vtime(pthread_mutex_t *mutex){
                 temp = temp->next;
         }
 }
-
+*/
 /////////////////////////////////////////////////////////////////end of added function//////////////////////////////////////////////////////////
 
 int
@@ -86,7 +86,7 @@ __pthread_mutex_unlock_usercnt (pthread_mutex_t *mutex, int decr)
     {
       /* Always reset the owner field.  */
     normal:
-     add_vtime(mutex);	
+//     add_vtime(mutex);	
       mutex->__data.__owner = 0;
       if (decr)
 	/* One less user.  */
