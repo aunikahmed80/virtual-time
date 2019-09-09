@@ -97,10 +97,6 @@ __pthread_barrier_wait (pthread_barrier_t *barrier)
 {
   struct pthread_barrier *bar = (struct pthread_barrier *) barrier;
   int self_pid =(int) syscall(__NR_gettid);
-  double vtime = (double)syscall(333,self_pid);
-//  printf("in barrier wat: %d\tv_time returned %lf\t grp_mx_vtime %lf\n",self_pid, vtime, bar->grp_mx_vtime);
-  bar->grp_mx_vtime = bar->grp_mx_vtime > vtime?bar->grp_mx_vtime:vtime;	
-
   /* How many threads entered so far, including ourself.  */
   unsigned int i;
 
@@ -202,6 +198,12 @@ __pthread_barrier_wait (pthread_barrier_t *barrier)
   /* We need release MO here so that our use of the barrier happens before
      reset or memory reuse after pthread_barrier_destroy.  */
   o = atomic_fetch_add_release (&bar->out, 1) + 1;
+  double vtime = (double)syscall(333,self_pid);
+//  printf("in barrier wat: %d\tv_time returned %lf\t grp_mx_vtime %lf\n",self_pid, vtime, bar->grp_mx_vtime);
+  bar->grp_mx_vtime = bar->grp_mx_vtime > vtime?bar->grp_mx_vtime:vtime;	
+
+
+
   if (o == max_in_before_reset)
     {
       /* Perform a reset if we are the last pre-reset thread leaving.   All
@@ -222,7 +224,7 @@ __pthread_barrier_wait (pthread_barrier_t *barrier)
 
     }
   syscall(338,self_pid,(long long int)bar->grp_mx_vtime);
-printf("in barrier wat: %d\tsetting time  %lf %lld \n",self_pid, bar->grp_mx_vtime,(long long int)bar->grp_mx_vtime);
+//printf("in barrier wat: %d\tsetting time  %lf %lld \n",self_pid, bar->grp_mx_vtime,(long long int)bar->grp_mx_vtime);
   /* Return a special value for exactly one thread per round.  */
   return i % count == 0 ?  PTHREAD_BARRIER_SERIAL_THREAD : 0;
 }

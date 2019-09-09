@@ -349,6 +349,8 @@
 338     common  set_vtime		__x64_sys_set_vtime
 339     common  copy_times		__x64_sys_copy_times
 340     common  sync_vt_at_join 	__x64_sys_sync_vt_at_join
+341	common  naive_vtime 		__x64_sys_naive_vtime
+342	common	sync_max_vtime		__x64_sys_sync_max_vtime
 #
 # x32-specific system call numbers start at 512 to avoid cache impact
 # for native 64-bit operation. The __x32_compat_sys stubs are created

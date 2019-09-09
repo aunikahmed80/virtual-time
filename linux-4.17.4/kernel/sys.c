@@ -2593,13 +2593,22 @@ SYSCALL_DEFINE1(v_time, int, arg0) //333
 }
 
 
-SYSCALL_DEFINE1(group_vtime, int, arg0) //return max v_time in thread group
+SYSCALL_DEFINE1(group_vtime, int, arg0)//335 //return max v_time in thread group
 {
         struct pid *pid_struct;
         struct task_struct *t;
         pid_struct = find_get_pid(arg0);
         t = pid_task(pid_struct,PIDTYPE_PID);
 	struct task_struct *parent = t->group_leader;
+	u64 mx_time = parent->se.mx_on_cpu_time;
+	struct task_struct *temp = parent;
+	do{
+		mx_time = mx_time > temp->se.on_cpu_time? mx_time:temp->se.on_cpu_time;
+		temp = next_thread(temp);
+	}while(temp != parent);
+	
+	return mx_time-parent->se.base_on_cpu_time;
+/*
 	
 	if(parent->se.mx_on_cpu_time > parent->se.on_cpu_time){
 //	printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.mx_on_cpu_time  );
@@ -2609,11 +2618,11 @@ SYSCALL_DEFINE1(group_vtime, int, arg0) //return max v_time in thread group
 //		printk(KERN_INFO "group_vtime syscall called with %d \treturn: %llu\n",arg0,parent->se.on_cpu_time  );
 		return parent->se.on_cpu_time - parent->se.base_on_cpu_time;
 	}
-
+*/
 
 }
 
-SYSCALL_DEFINE2(add_vtime, int, arg0, long long int, delta_v)
+SYSCALL_DEFINE2(add_vtime, int, arg0, long long int, delta_v)//334
 {
         struct pid *pid_struct;
         struct task_struct *t;
@@ -2626,7 +2635,7 @@ SYSCALL_DEFINE2(add_vtime, int, arg0, long long int, delta_v)
 }
 
 
-SYSCALL_DEFINE2(set_vtime, int, arg0, long long int, v_time)
+SYSCALL_DEFINE2(set_vtime, int, arg0, long long int, v_time)//338
 {
         struct pid *pid_struct;
         struct task_struct *t;
@@ -2638,7 +2647,7 @@ SYSCALL_DEFINE2(set_vtime, int, arg0, long long int, v_time)
   return t->se.on_cpu_time ;
 }
 
-SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)
+SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)//340
 {
 
 
@@ -2673,7 +2682,7 @@ SYSCALL_DEFINE1(sync_vt_at_join, int, child_pid)
 }
 
 
-SYSCALL_DEFINE1(del_exec, int, arg0)
+SYSCALL_DEFINE1(del_exec, int, arg0)//336
 {
         struct pid *pid_struct;
         struct task_struct *t;
@@ -2684,7 +2693,7 @@ SYSCALL_DEFINE1(del_exec, int, arg0)
   return t->se.del_exec ;
 }
 
-SYSCALL_DEFINE1(exec_start_gtime, int, arg0)
+SYSCALL_DEFINE1(exec_start_gtime, int, arg0)//337
 {
         struct pid *pid_struct;
         struct task_struct *t;
@@ -2699,7 +2708,7 @@ SYSCALL_DEFINE1(exec_start_gtime, int, arg0)
 SYSCALL_DEFINE3(copy_times,
                 unsigned long , num_thread,
                 unsigned long *, thread_times,
-                int, arg0)
+                int, arg0) //339
 {
 
 	unsigned long vtimes [num_thread+1][3]; //(unsigned long*) kmalloc(sizeof(unsigned long),GFP_KERNEL);
@@ -2727,6 +2736,48 @@ SYSCALL_DEFINE3(copy_times,
 
     /* return amount of data copied */
     return i-1;
+}
+
+
+SYSCALL_DEFINE1(naive_vtime, int, arg0) //341
+{
+        struct pid *pid_struct;
+        struct task_struct *t;
+        pid_struct = find_get_pid(arg0);
+        if(pid_struct == NULL) {return 1;}
+        //t =find_task_by_vpid(arg0);//
+        t =  pid_task(pid_struct,PIDTYPE_PID);
+        if(t == NULL) {return 1;}
+
+//  printk(KERN_INFO "v_time syscall called with %d \t @ v_time %llu\n",arg0,t->se.on_cpu_time  );
+  return t->se.mx_naive_vtime > t->se.naive_vtime ? t->se.mx_naive_vtime: t->se.naive_vtime ;
+
+
+}
+
+
+SYSCALL_DEFINE2(sync_max_vtime,
+                int, num_thread,
+                int*, thread_pid,
+                ) //342
+{
+	int i;
+	struct pid *pid_struct;
+        struct task_struct *task;
+	u64 mx = 0;
+	for (i = 0; i< num_thread; i++){
+		pid_struct = find_get_pid(thread_pid[i]);
+        	task = pid_task(pid_struct,PIDTYPE_PID);
+		mx = task->se.on_cpu_time > mx ? task->se.on_cpu_time : mx;
+	
+	}
+       	for (i = 0; i< num_thread; i++){
+		pid_struct = find_get_pid(thread_pid[i]);
+        	task = pid_task(pid_struct,PIDTYPE_PID);
+		task->se.on_cpu_time =  mx; 
+	
+	}
+
 }
 
 
